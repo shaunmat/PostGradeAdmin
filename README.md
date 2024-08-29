@@ -1,6 +1,6 @@
-# PostGrade Portal
+# PostGrade Admin
 
-Postgrade Portal is a React-based web application that streamlines academic activities, including course management, assignments, research, and communication. Featuring dynamic sidebars, real-time progress tracking, and a modular architecture, it enhances the user experience for students and lecturers.
+Postgrade Admin is a React-based web application that streamlines academic activities, including course management, assignments, research, and communication. Featuring dynamic sidebars, real-time progress tracking, and a modular architecture, it enhances the user experience for students and lecturers.
 
 ## Vite Tailwind CSS React Project
 
