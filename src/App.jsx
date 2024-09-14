@@ -1,9 +1,13 @@
+import { useAuth } from './backend/AuthContext';
 import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Login } from './pages/shared/Login';
 import { PageRoutes } from './pages/PageRoutes';
-
+//import { LogoLoader } from './components/LogoLoader';
+import { AuthProvider } from './backend/AuthContext';
 function App() {
+  const {CurrentUser,LoggedInUser,Loading}=useAuth()||{};
+
   const [loading, setLoading] = useState(false);
   const location = useLocation();
 
@@ -20,17 +24,22 @@ function App() {
     return () => clearTimeout(timer);
   }, [location]);
 
-  if (loading) {
-    // return <LogoLoader />;
-  }
-
+  // if (loading) {
+  //   return <LogoLoader />;
+  // }
+  const email = CurrentUser?.email || '' ;
+  const userType = email.startsWith('7') ? 'Supervisor' : email.startsWith('2') ? 'Student'?'Admin':email=="220143805@uj.ac.za":'';
+  console.log(CurrentUser +"Is the current user from the the database")
   return (
-    <Routes>
-      {/* Redirect from the root path to /login */}
+    <AuthProvider>
+      <Routes>
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="/login" element={<Login />} />
       <Route path="/*" element={<PageRoutes />} />
-    </Routes>
+      {/* Redirect based on userType */}
+      {userType === '' && <Route path="*" element={<Navigate to="/login" />} />}
+      </Routes>
+    </AuthProvider> 
   );
 }
 

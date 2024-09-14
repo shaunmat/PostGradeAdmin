@@ -3,175 +3,29 @@ import { HiAcademicCap, HiDocument } from "react-icons/hi"
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DataTable } from "simple-datatables";
-// import { LineChart } from "../components/LineChart"
-
+import { auth, db } from "../backend/config"; // Import your firebase config
+import { getDocs, query, collection, where } from "firebase/firestore";
+import { SupervisorCount } from "../components/SupervisorsCount";
+import {Totals} from "../components/Totals";
+import { LineChart } from "../components/LineChart";
+import {BarChart} from "../components/BarChart";
 import Chart from "react-apexcharts";
-
-const LineChart = () => {
-    const options = {
-        chart: {
-            id: "basic-line",
-            toolbar: {
-                show: false,
-            },
-        },
-        xaxis: {
-            categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"],
-            labels: {
-                style: {
-                    fontWeight: 'bold',
-                },
-            },
-        },
-        yaxis: {
-            labels: {
-                style: {
-                    fontWeight: 'bold',
-                },
-            },
-        },
-        stroke: {
-            curve: 'smooth',
-        },
-        dataLabels: {
-            enabled: false,
-        },
-        grid: {
-            show: true,
-        },
-        colors: ["#FF8503", "#FFC700"],
-    };
-
-    const series = [
-        {
-            name: "Students",
-            data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
-        },
-        {
-            name: "Supervisors",
-            data: [20, 30, 25, 40, 39, 50, 60, 71, 85],
-        },
-    ];
-
-    return (
-        <Chart options={options} series={series} type="line" height="300" />
-    );
-};
-
-const BarChart = () => {
-    const options = {
-        chart: {
-            id: "basic-bar",
-            toolbar: {
-                show: false,
-            },
-        },
-        xaxis: {
-            categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"],
-            labels: {
-                style: {
-                    fontWeight: 'bold',
-                },
-            },
-        },
-        yaxis: {
-            labels: {
-                style: {
-                    fontWeight: 'bold',
-                },
-            },
-        },
-        dataLabels: {
-            enabled: false,
-        },
-        grid: {
-            show: true,
-        },
-        colors: ["#FF8503", "#FFC700"],
-    };
-
-    const series = [
-        {
-            name: "Students",
-            data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
-        },
-        {
-            name: "Supervisors",
-            data: [20, 30, 25, 40, 39, 50, 60, 71, 85],
-        },
-    ];
-
-    return (
-        <Chart options={options} series={series} type="bar" height="300" />
-    );
-}
-
-// Create a table instance for displaying all supervisors and the number of students they are supervising
-// const supervisorData = [
-//     {
-//         supervisor: "Mr. Ronny K.",
-//         students: 20,
-
-//     },
-//     {
-//         supervisor: "Ms. Tebogo M.",
-//         students: 15,
-//     },
-//     {
-//         supervisor: "Dr. Mpho M.",
-//         students: 10,
-//     },
-//     {
-//         supervisor: "Dr. Sipho M.",
-//         students: 5,
-//     },
-//     {
-//         supervisor: "Mr. Thabo M.",
-//         students: 10,
-//     },
-//     {
-//         supervisor: "Ms. Nthabiseng M.",
-//         students: 15,
-//     },
-// ];
-
-
-
 export const Dashboard = () => {
     const [showDropdown, setShowDropdown] = useState(false);
+    const [StudentID, setStudentID] = useState(null);
+    const [role, setRole] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const toggleDropdown = () => {
         setShowDropdown(!showDropdown);
-    }
-
-    useEffect(() => {
-        const customData = {
-            headings: [
-                "Supervisor",
-                "Students",
-            ],
-            data: [
-                ["Mr. Ronny K.", 20],
-                ["Ms. Tebogo M.", 15],
-                ["Dr. Mpho M.", 10],
-                ["Dr. Sipho M.", 5],
-                ["Mr. Thabo M.", 10],
-                ["Ms. Nthabiseng M.", 15],
-            ],
-        };
-    
-        new DataTable("#supervisor-table", {
-            data: customData
-        });
-    }, []);
-        
+    }    
         // const dataTable = new DataTable("#default-table", { data: customData });
     return (
         <div className="p-4 sm:ml-64 pt-16">
         <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
             <div className="flex flex-col justify-between mb-4">
                 <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-200">
-                    Welcome Back <span className="text-[#FF8503] dark:text-[#FF8503]">Mr. Ronny Mabokela</span>
+                    Welcome Back <span className="text-[#FF8503] dark:text-[#FF8503]">Admin</span>
                 </h1>
                 <p className="mt-2 text-md text-gray-500 dark:text-gray-400">
                     Here's what's happening with your projects today
@@ -179,7 +33,7 @@ export const Dashboard = () => {
                 
             </div>
                 <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="relative flex items-center justify-between h-24 rounded-xl bg-white dark:bg-gray-800 px-4">
+                <div className="relative flex items-center justify-between h-24 rounded-xl bg-white dark:bg-gray-800 px-4">l
                     {/* Centered content (e.g., another icon) */}
                     <div className="flex justify-center items-center rounded-xl h-14 p-5 bg-[#FF8503] dark:bg-[#FF8503]">
                         <HiAcademicCap className="text-3xl text-white" />
@@ -187,7 +41,7 @@ export const Dashboard = () => {
                     {/* Number of students on the right side */}
                     <div className="flex flex-col items-end">
                         <span className="text-xl font-extrabold text-gray-800 dark:text-gray-200">Total Students</span>
-                        <span className="text-lg font-semibold text-gray-500 dark:text-gray-400">120</span>
+                        <span className="text-lg font-semibold text-gray-500 dark:text-gray-400"><Totals Type="Student"/></span>
                     </div>
                 </div>
 
@@ -200,7 +54,7 @@ export const Dashboard = () => {
                     {/* Number of students on the right side */}
                     <div className="flex flex-col items-end">
                         <span className="text-xl font-extrabold text-gray-800 dark:text-gray-200">Total Superviors</span>
-                        <span className="text-lg font-semibold text-gray-500 dark:text-gray-400">10</span>
+                        <span className="text-lg font-semibold text-gray-500 dark:text-gray-400"><Totals Type="Supervisor"/></span>
                     </div>
                 </div>
 
@@ -213,7 +67,7 @@ export const Dashboard = () => {
                     {/* Number of students on the right side */}
                     <div className="flex flex-col items-end">
                         <span className="text-xl font-extrabold text-gray-800 dark:text-gray-200">Total Projects</span>
-                        <span className="text-lg font-semibold text-gray-500 dark:text-gray-400">120</span>
+                        <span className="text-lg font-semibold text-gray-500 dark:text-gray-400"><Totals Type="Student"/></span>
                     </div>
                 </div>
             </div>
@@ -276,61 +130,9 @@ export const Dashboard = () => {
                 </div>
 
                 {/* Table */}
-                <div className="p-6">
-                    <table id="supervisor-table" className="table-auto w-full">
-                        <thead>
-                            <tr>
-                                <th className="px-4 py-2">Name</th>
-                                <th className="px-4 py-2">Company</th>
-                                <th className="px-4 py-2">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td className="border px-4 py-2">Flowbite</td>
-                                <td className="border px-4 py-2">Bergside</td>
-                                <td className="border px-4 py-2">05/23/2023</td>
-                            </tr>
-                            <tr>
-                                <td className="border px-4 py-2">Next.js</td>
-                                <td className="border px-4 py-2">Vercel</td>
-                                <td className="border px-4 py-2">03/12/2024</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <SupervisorCount />
             </div>
-            {/* <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800">
-                    <p className="text-2xl text-gray-400 dark:text-gray-500">
-                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16"/>
-                    </svg>
-                    </p>
-                </div>
-                <div className="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800">
-                    <p className="text-2xl text-gray-400 dark:text-gray-500">
-                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16"/>
-                    </svg>
-                    </p>
-                </div>
-                
-                <div className="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800">
-                    <p className="text-2xl text-gray-400 dark:text-gray-500">
-                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16"/>
-                    </svg>
-                    </p>
-                </div>
-                <div className="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800">
-                    <p className="text-2xl text-gray-400 dark:text-gray-500">
-                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16"/>
-                    </svg>
-                    </p>
-                </div>
-            </div> */}
+            
             <Footer />
         </div>
         </div>
